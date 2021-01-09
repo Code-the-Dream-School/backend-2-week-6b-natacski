@@ -1,8 +1,20 @@
+
 <h1>Ajax#home</h1>
 <p>Find me in app/views/ajax/home.html.erb</p>
-<button id="list-todos" type="button">List todos</button><br>
-<label>title</label><input id="todo-title"><label>created by</label>
-<input id="todo-created-by"><button id="create-todo" type="button">Create todo</button><br>
+<button id="list-todos" type="button" style="background-color: #00ffff; 
+  border: 1px solid #00008b;
+  color: #00008b;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;"
+>List todos</button><br><br>
+<label>Title: </label><input id="todo-title"><label> Created by: </label>
+<input id="todo-created-by"><button id="create-todo" type="button" style="color: #009900">Create todo</button><br><br>
+<label>To-do id: </label><input id="todo-id"><button id="get-todo-id" type="button" style="color: #ff00ff">Get todo id</button><br><br>
+<input id="name"><button id="name" type="button">Name</button>
+<input type="checkbox" id="done"><button id="create-item" type="button">Create Item</button><br><br>
 <div id="results-div"></div>
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -50,5 +62,54 @@ document.addEventListener('DOMContentLoaded', (event) => {
     console.log("sending data:",dataToSend)
     eventRequest.send(dataToSend);
   });
+
+
+// Get todo by id
+const getToDoById = () =>{
+  var eventRequest = new XMLHttpRequest();
+   eventRequest.onreadystatechange = function () { // event handler for the ajax call
+      if(eventRequest.readyState === XMLHttpRequest.DONE) { // only handle DONE
+        if  (eventRequest.status === 200) { // we expect a 200 from a GET
+          resultsDiv.innerHTML=''; // Clear out this resultsDiv
+          resultsDiv.innerHTML = eventRequest.responseText;
+          
+        } else {
+          alert(`Return code ${eventRequest.status} ${eventRequest.statusText}`); // this is how we report errors
+        }
+      }
+    };
+    eventRequest.open('GET', 'http://localhost:3001/todos/'+ todoId.value + '/items' );  // method and URL to create a todo
+    eventRequest.send();
+}
+
+ const getTodoIdButton = document.getElementById('get-todo-id');
+  const todoId = document.getElementById('todo-id');
+ 
+  getTodoIdButton.addEventListener('click', (event) => {
+   getToDoById();
+  });
+
+//Create new item
+const createItemButton = document.getElementById('create-item');
+  const name = document.getElementById('name');
+  const done = document.getElementById('done')
+  createItemButton.addEventListener('click', (event) => {
+    var eventRequest = new XMLHttpRequest();
+    eventRequest.onreadystatechange = function () {
+      if(eventRequest.readyState === XMLHttpRequest.DONE) {
+        if  (eventRequest.status === 201) {     // this is the expected return code for a POST to create a todo
+          getToDoById() // this will be the todo that is created
+        } else {
+          alert(`Return code ${eventRequest.status} ${eventRequest.statusText} ${eventRequest.responseText}`);  // error handling
+        }
+      }
+    };
+    eventRequest.open('POST', 'http://localhost:3001/todos/'+ todoId.value + '/items');  // method and URL to create a todo
+    eventRequest.setRequestHeader("Content-Type", "application/json");  // always do this on POST or PUT
+    let dataToSend = `{"name": "${name.value}", "done": "${done.checked}"}` // JSON for the create
+    console.log("sending data:",dataToSend)
+    eventRequest.send(dataToSend);
+  });
+
 });
 </script>
